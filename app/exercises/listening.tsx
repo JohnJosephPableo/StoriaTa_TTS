@@ -24,6 +24,7 @@ import { ExerciseService } from "../../src/services/ExerciseService";
 import { ChevronRight, Hash, RefreshCw } from "@tamagui/lucide-icons";
 import { ExercisePopover } from "../../src/components/ExercisePopover";
 import { ExerciseTypes } from "../../src/utils/enums";
+import { Link } from "expo-router";
 
 export default function ListeningExercises({ session }: { session: Session }) {
   // DO NOT DELETE: FOR TESTING AND INITIALIZATION
@@ -71,6 +72,9 @@ export default function ListeningExercises({ session }: { session: Session }) {
             <Text fontSize={20} fontWeight={800} color={"$color"}>
               Listening Exercises
             </Text>
+            <Link push href="/exercises/text_to_speech" asChild>
+              <Button size="$4">TTS</Button>
+            </Link>
             <RefreshCw
               onPress={loadExercises}
               disabled={loading}
