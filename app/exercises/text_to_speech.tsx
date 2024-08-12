@@ -25,20 +25,38 @@ import { Alert, useColorScheme } from "react-native";
 export default function TextToSpeech({ session }: { session: Session }) {
   // DO NOT DELETE: FOR TESTING AND INITIALIZATION
   useEffect(() => {
-    console.log("LISTENING_EXERCISES page loaded.");
+    console.log("TEXT_TO_SPEECH page loaded.");
   }, []);
+
+  type Movie = {
+    id: string;
+    title: string;
+    releaseYear: string;
+  };
 
   const colorScheme = useColorScheme();
 
   const [loading, setLoading] = useState(false);
   const [text, setText] = useState(""); 
+  const [audioUrl, setAudioUrl] = useState("");
+  const [data, setData] = useState<Movie[]>([]);
 
   const handleTextChange = (value: string) => {
     setText(value); 
   };
 
   const handleSubmit = async () => {
-    
+    const response = await fetch('https://reactnative.dev/movies.json', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+    const json = await response.json();
+    setAudioUrl(json);
+    console.log(json);
+
   };
 
   return (
