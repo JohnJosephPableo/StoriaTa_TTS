@@ -20,6 +20,8 @@ import {
 } from "tamagui";
 import { useEffect, useState } from "react";
 import { Alert, useColorScheme } from "react-native";
+import { Audio } from 'expo-av';
+import { supabase } from "../../src/utils/supabase";
 
 
 export default function TextToSpeech({ session }: { session: Session }) {
@@ -28,35 +30,61 @@ export default function TextToSpeech({ session }: { session: Session }) {
     console.log("TEXT_TO_SPEECH page loaded.");
   }, []);
 
-  type Movie = {
-    id: string;
-    title: string;
-    releaseYear: string;
-  };
-
   const colorScheme = useColorScheme();
 
   const [loading, setLoading] = useState(false);
   const [text, setText] = useState(""); 
   const [audioUrl, setAudioUrl] = useState("");
-  const [data, setData] = useState<Movie[]>([]);
 
   const handleTextChange = (value: string) => {
     setText(value); 
   };
 
   const handleSubmit = async () => {
-    const response = await fetch('https://reactnative.dev/movies.json', {
-        method: 'GET',
+   const fileName = text.trim().replace(/ /g, '_') + '.mpeg';
+   const bucketName = 'text-to-speech'; 
+
+   const { data, error } = await supabase
+     .storage
+     .from(bucketName)
+     .list('', {
+       limit: 1,
+       search: fileName
+     });
+
+   if (error) throw error;
+
+   let audioFileUrl;
+
+    const response = await fetch('https://storiatatts.agreeableground-aec2017e.australiaeast.azurecontainerapps.io/generate-audio', {
+        method: 'POST',
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
-      });
+        body: JSON.stringify({
+          text: text,
+        }),
+      })
     const json = await response.json();
-    setAudioUrl(json);
-    console.log(json);
+    console.log(json)
 
+    setAudioUrl(json);
+    console.log("Now getting the audio link")
+    // json 
+    try {
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: json },
+        { shouldPlay: true }
+      );
+      
+      // Optional: You can add more controls here
+      // await sound.playAsync();
+      console.log('Audio is playing');
+    } catch (error) {
+      console.error('Error playing audio:', error);
+    }
+  
   };
 
   return (
