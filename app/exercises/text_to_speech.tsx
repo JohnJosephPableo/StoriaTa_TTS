@@ -41,22 +41,30 @@ export default function TextToSpeech({ session }: { session: Session }) {
   };
 
   const handleSubmit = async () => {
-   const fileName = text.trim().replace(/ /g, '_') + '.mpeg';
-   const bucketName = 'text-to-speech'; 
-
-   const { data, error } = await supabase
+    const fileName = text.trim().replace(/ /g, '_');
+   
+    console.log(fileName)
+    const {data} = await supabase
      .storage
-     .from(bucketName)
-     .list('', {
-       limit: 1,
-       search: fileName
-     });
+     .from('text-to-speech')
+     .getPublicUrl(fileName);
 
-   if (error) throw error;
-
-   let audioFileUrl;
-
-    const response = await fetch('https://storiatatts.agreeableground-aec2017e.australiaeast.azurecontainerapps.io/generate-audio', {
+    if(data.publicUrl){
+      console.log("File Exist");
+      console.log(data.publicUrl)
+      try {
+        const { sound } = await Audio.Sound.createAsync(
+          { uri: data.publicUrl},
+          { shouldPlay: true }
+        );
+        
+        console.log('Audio is playing');
+      } catch (error) {
+        console.error('Error playing audio:', error);
+      }
+    }else{
+      console.log("Generating Speech")
+      const response = await fetch('https://storiatatts.agreeableground-aec2017e.australiaeast.azurecontainerapps.io/generate-audio', {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -79,12 +87,11 @@ export default function TextToSpeech({ session }: { session: Session }) {
       );
       
       // Optional: You can add more controls here
-      // await sound.playAsync();
       console.log('Audio is playing');
     } catch (error) {
       console.error('Error playing audio:', error);
     }
-  
+    }
   };
 
   return (
